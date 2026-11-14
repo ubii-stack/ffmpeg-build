@@ -41,8 +41,9 @@ CI workflows
 ------------
 
   - `.github/workflows/build-windows-arm64.yml` — **active CI**: Windows ARM64
-    only (`ARCH=aarch64`, decode + encode). Installs llvm-mingw on Ubuntu.
-    Runs on push to `main`, PRs, tags `v*`, and **workflow_dispatch**.
+    **audio-encode only** (`ARCH=aarch64`, `FFMPEG_VARIANT=encode`). Installs
+    llvm-mingw on Ubuntu. Runs on push to `main`, PRs, tags `v*`, and
+    **workflow_dispatch**.
   - `.github/workflows/build.yml` — original full matrix (Linux / Windows x86 /
     macOS). Kept for later; **manual only** (`workflow_dispatch`). Uncomment
     the `push` / `pull_request` / `tags` block in that file to restore automatic
@@ -52,6 +53,33 @@ Actions UI:
 
   - Day-to-day: **Build Windows ARM64 ffmpeg** (auto on push/PR, or Run workflow).
   - Full matrix later: **Build static ffmpeg** → **Run workflow**.
+
+GitHub Releases (Acoustid-style)
+--------------------------------
+
+Release **assets** (`.tar.gz` per platform/variant) are uploaded when you push a
+version tag matching `v*`, for example:
+
+```sh
+git tag v8.1.2-1
+git push origin v8.1.2-1
+```
+
+Each tarball unpacks to a prefix directory such as
+`ffmpeg-8.1.2-audio-encode-aarch64-w64-mingw32/` with `bin/ffmpeg.exe`.
+
+**One-time repo setup (required for releases):**
+
+1. Open **Settings → Actions → General → Workflow permissions**  
+   https://github.com/ubii-stack/ffmpeg-build/settings/actions  
+2. Choose **Read and write permissions** (not read-only). Save.
+
+Pushes to `main` without a tag only produce workflow **Artifacts** (retention
+limited); use a tag when you want files on the **Releases** page.
+
+A Git **tag alone** (failed release job) shows as **“N tags”** on the repo; a
+successful run creates a **Release** with downloadable `.tar.gz` assets under
+**Releases** (not only under Tags).
 
 Building locally
 ----------------
