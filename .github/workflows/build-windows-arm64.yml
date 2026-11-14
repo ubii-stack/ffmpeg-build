@@ -1,0 +1,81 @@
+# Windows ARM64 (aarch64-w64-mingw32) only.
+# Uses llvm-mingw — apt mingw-w64 does not ship an aarch64 Windows target.
+# Original full matrix remains in build.yml (left unchanged for later).
+
+name: Build Windows ARM64 ffmpeg
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  package-windows-arm64:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        variant:
+          - decode
+          - encode
+    env:
+      ARCH: aarch64
+      FFMPEG_VARIANT: ${{ matrix.variant }}
+      # Pin a known llvm-mingw release (UCRT, runs on amd64 Ubuntu, targets WoA).
+      LLVM_MINGW_VERSION: "20261006"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install nasm
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y nasm
+
+      - name: Install llvm-mingw (aarch64-w64-mingw32)
+        run: |
+          set -eu
+          asset="llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-22.04-x86_64.tar.xz"
+          url="https://github.com/mstorsjo/llvm-mingw/releases/download/${LLVM_MINGW_VERSION}/${asset}"
+          curl -fsSL -o /tmp/llvm-mingw.tar.xz "$url"
+          sudo tar -C /opt -xf /tmp/llvm-mingw.tar.xz
+          prefix="/opt/llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-22.04-x86_64"
+          echo "${prefix}/bin" >> "$GITHUB_PATH"
+          "${prefix}/bin/aarch64-w64-mingw32-gcc" --version
+
+      - name: Build
+        run: ./build-windows.sh
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-windows-aarch64-${{ env.FFMPEG_VARIANT }}
+          path: artifacts/
+
+  release-windows-arm64:
+    runs-on: ubuntu-latest
+    needs:
+      - package-windows-arm64
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+      - name: Make tarballs
+        run: |
+          mkdir -p artifacts/release/
+          cd artifacts/
+          for dir in ffmpeg-*/ffmpeg-*
+          do
+            name=$(basename "$dir")
+            tar czf "release/$name.tar.gz" -C "$(dirname "$dir")" "$name"
+          done
+          ls -l release/
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

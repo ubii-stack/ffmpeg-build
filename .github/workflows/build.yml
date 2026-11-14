@@ -1,12 +1,19 @@
+# Full matrix (Linux / Windows x86 / macOS). Kept for later full releases.
+# Automatic push/PR triggers are off so day-to-day CI is Windows ARM64 only
+# (see build-windows-arm64.yml). Re-enable push/PR/tags below when you want
+# the full matrix again, or run this workflow manually (workflow_dispatch).
+
 name: Build static ffmpeg
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - v*
-  pull_request:
+  workflow_dispatch:
+  # Uncomment to restore automatic full-matrix builds:
+  # push:
+  #   branches:
+  #     - main
+  #   tags:
+  #     - v*
+  # pull_request:
 
 jobs:
   package-linux:
