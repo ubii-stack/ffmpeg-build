@@ -48,9 +48,12 @@ then
         --host=$LAME_HOST_ARCH-apple-darwin \
         "CC=/usr/bin/clang -target $TARGET" \
         "CFLAGS=-fPIC -target $TARGET"
+    export PKG_CONFIG_PATH="$DEPS_DIR/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+    export PKG_CONFIG_LIBDIR="$DEPS_DIR/lib/pkgconfig"
     FFMPEG_CONFIGURE_FLAGS+=(
         --extra-cflags=-I$DEPS_DIR/include
         --extra-ldflags=-L$DEPS_DIR/lib
+        --pkg-config-flags=--static
     )
 fi
 

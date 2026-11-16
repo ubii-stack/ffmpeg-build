@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
 - Encode variant no longer enables experimental native `--enable-encoder=opus`
   (scrambled audio); uses `--enable-libopus` / `--enable-encoder=libopus`.
 - macOS dropped from default CI matrix (build locally).
+- Opus tarball from GitHub releases; set `PKG_CONFIG_PATH` / `PKG_CONFIG_LIBDIR`
+  so FFmpeg finds static libopus in CI.
 
 ## [4.2.2-5] - 2020-02-19
 ### Changed

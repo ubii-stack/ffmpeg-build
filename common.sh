@@ -15,7 +15,8 @@ LAME_TARBALL_URL=https://downloads.sourceforge.net/project/lame/lame/$LAME_VERSI
 # FFmpeg's native --enable-encoder=opus is experimental and produces scrambled audio.
 OPUS_VERSION=1.5.2
 OPUS_TARBALL=opus-$OPUS_VERSION.tar.gz
-OPUS_TARBALL_URL=https://downloads.xiph.org/releases/opus/$OPUS_TARBALL
+# Prefer GitHub release assets (downloads.xiph.org is often blocked / flaky in CI).
+OPUS_TARBALL_URL=https://github.com/xiph/opus/releases/download/v${OPUS_VERSION}/opus-${OPUS_VERSION}.tar.gz
 
 # Which build variant to produce:
 #   decode - audio decoders only (default, used for Chromaprint/fpcalc)

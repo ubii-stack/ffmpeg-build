@@ -14,14 +14,27 @@ source common.sh
 
 if [ ! -e "$OPUS_TARBALL" ]
 then
-	curl -s -L -o "$OPUS_TARBALL" "$OPUS_TARBALL_URL"
+	echo "Downloading $OPUS_TARBALL_URL" >&2
+	curl -fL --retry 3 --retry-delay 2 -o "$OPUS_TARBALL" "$OPUS_TARBALL_URL"
 fi
 
-BUILD_DIR=$(mktemp -d -p "$(pwd)" opus.XXXXXXXX)
+# mktemp -p is GNU; fall back for macOS.
+if BUILD_DIR=$(mktemp -d -p "$(pwd)" opus.XXXXXXXX 2>/dev/null)
+then
+	:
+else
+	BUILD_DIR=$(mktemp -d "$(pwd)/opus.XXXXXXXX")
+fi
 trap 'rm -rf $BUILD_DIR' EXIT
 
 cd "$BUILD_DIR"
 tar --strip-components=1 -xf "$BASE_DIR/$OPUS_TARBALL"
+
+if [ ! -x ./configure ]
+then
+	echo "opus tarball missing ./configure" >&2
+	exit 1
+fi
 
 ./configure \
 	--prefix="$OPUS_PREFIX" \
@@ -33,3 +46,5 @@ tar --strip-components=1 -xf "$BASE_DIR/$OPUS_TARBALL"
 
 make
 make install
+
+test -f "$OPUS_PREFIX/lib/libopus.a" -o -f "$OPUS_PREFIX/lib/libopus.lib"

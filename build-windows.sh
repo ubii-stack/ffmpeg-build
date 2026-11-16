@@ -53,9 +53,12 @@ if [ "$FFMPEG_VARIANT" = encode ]
 then
 	LAME_PREFIX=$DEPS_DIR ./build-lame.sh --host=$ARCH-w64-mingw32
 	OPUS_PREFIX=$DEPS_DIR ./build-opus.sh --host=$ARCH-w64-mingw32
+	export PKG_CONFIG_PATH="$DEPS_DIR/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+	export PKG_CONFIG_LIBDIR="$DEPS_DIR/lib/pkgconfig"
 	FFMPEG_CONFIGURE_FLAGS+=(
 		--extra-cflags=-I$DEPS_DIR/include
 		--extra-ldflags=-L$DEPS_DIR/lib
+		--pkg-config-flags=--static
 	)
 fi
 
