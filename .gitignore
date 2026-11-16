@@ -1,7 +1,9 @@
 /ffmpeg-*.tar.gz
 /lame-*.tar.gz
+/opus-*.tar.gz
 /artifacts/
 /build.*/
 /deps.*/
 /lame.*/
+/opus.*/
 .DS_Store

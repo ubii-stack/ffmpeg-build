@@ -1,19 +1,21 @@
-# Full matrix (Linux / Windows x86 / macOS). Kept for later full releases.
-# Automatic push/PR triggers are off so day-to-day CI is Windows ARM64 only
-# (see build-windows-arm64.yml). Re-enable push/PR/tags below when you want
-# the full matrix again, or run this workflow manually (workflow_dispatch).
+# Linux + Windows (x86) encode/decode matrix — automatic on push/PR/tags.
+# macOS: build locally with ./build-macos-local.sh (see README).
+# Windows ARM64: see build-windows-arm64.yml.
 
 name: Build static ffmpeg
 
 on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+  pull_request:
   workflow_dispatch:
-  # Uncomment to restore automatic full-matrix builds:
-  # push:
-  #   branches:
-  #     - main
-  #   tags:
-  #     - v*
-  # pull_request:
+
+permissions:
+  contents: write
+  actions: read
 
 jobs:
   package-linux:
@@ -30,7 +32,7 @@ jobs:
       ARCH: ${{ matrix.arch }}
       FFMPEG_VARIANT: ${{ matrix.variant }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           sudo apt-get update -y && \
@@ -42,6 +44,14 @@ jobs:
           sudo apt-get install -y gcc-aarch64-linux-gnu
       - name: Build
         run: ./build-linux.sh
+      - name: Verify libopus (encode)
+        if: matrix.variant == 'encode'
+        run: |
+          set -eu
+          ff="$(find artifacts -type f -name ffmpeg -path '*/bin/ffmpeg' | head -1)"
+          test -n "$ff"
+          "$ff" -hide_banner -encoders 2>&1 | grep -q libopus
+          echo "ok libopus in $ff"
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -62,43 +72,29 @@ jobs:
       ARCH: ${{ matrix.arch }}
       FFMPEG_VARIANT: ${{ matrix.variant }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           sudo apt-get update -y && \
           sudo apt-get install -y nasm mingw-w64
       - name: Build
         run: ./build-windows.sh
+      - name: Verify libopus (encode)
+        if: matrix.variant == 'encode'
+        run: |
+          set -eu
+          ff="$(find artifacts -type f -name ffmpeg.exe -path '*/bin/*' | head -1)"
+          test -n "$ff"
+          # Cross-built exe cannot run on Linux; check strings for libopus linkage markers.
+          strings "$ff" | grep -qi 'libopus\|Opus' || {
+            echo "expected Opus/libopus strings in $ff" >&2
+            exit 1
+          }
+          echo "ok opus strings in $ff"
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ffmpeg-windows-${{ env.ARCH }}-${{ env.FFMPEG_VARIANT }}
-          path: artifacts/
-
-  package-macos:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        # https://developer.apple.com/documentation/apple-silicon/building-a-universal-macos-binary#Update-the-Architecture-List-of-Custom-Makefiles
-        target:
-          - x86_64-apple-macos10.9
-          - arm64-apple-macos11
-        variant:
-          - decode
-          - encode
-    env:
-      TARGET: ${{ matrix.target }}
-      FFMPEG_VARIANT: ${{ matrix.variant }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: brew install nasm
-      - name: Build
-        run: ./build-macos.sh
-      - name: Archive artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-${{ matrix.target }}-${{ env.FFMPEG_VARIANT }}
           path: artifacts/
 
   release:
@@ -106,10 +102,10 @@ jobs:
     needs:
       - package-linux
       - package-windows
-      - package-macos
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -141,11 +137,11 @@ jobs:
           done < <(find artifacts -type f \( -name ffmpeg.exe -o -name ffmpeg \) -path '*/bin/*')
           ls -la release-out/
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
+          token: ${{ github.token }}
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
+          make_latest: true
           generate_release_notes: true
           files: release-out/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

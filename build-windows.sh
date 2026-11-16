@@ -52,6 +52,7 @@ trap 'rm -rf $BUILD_DIR $DEPS_DIR' EXIT
 if [ "$FFMPEG_VARIANT" = encode ]
 then
 	LAME_PREFIX=$DEPS_DIR ./build-lame.sh --host=$ARCH-w64-mingw32
+	OPUS_PREFIX=$DEPS_DIR ./build-opus.sh --host=$ARCH-w64-mingw32
 	FFMPEG_CONFIGURE_FLAGS+=(
 		--extra-cflags=-I$DEPS_DIR/include
 		--extra-ldflags=-L$DEPS_DIR/lib

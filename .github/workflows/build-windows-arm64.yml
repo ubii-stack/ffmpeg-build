@@ -49,6 +49,17 @@ jobs:
       - name: Build
         run: ./build-windows.sh
 
+      - name: Verify libopus linkage
+        run: |
+          set -eu
+          ff="$(find artifacts -type f -name ffmpeg.exe -path '*/bin/*' | head -1)"
+          test -n "$ff"
+          strings "$ff" | grep -qi 'libopus\|Opus' || {
+            echo "expected Opus/libopus strings in $ff" >&2
+            exit 1
+          }
+          echo "ok opus strings in $ff"
+
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:

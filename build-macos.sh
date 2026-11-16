@@ -43,6 +43,11 @@ then
         --host=$LAME_HOST_ARCH-apple-darwin \
         "CC=/usr/bin/clang -target $TARGET" \
         "CFLAGS=-fPIC -target $TARGET"
+    # Opus configure accepts the same host/CC/CFLAGS as LAME on Darwin.
+    OPUS_PREFIX=$DEPS_DIR ./build-opus.sh \
+        --host=$LAME_HOST_ARCH-apple-darwin \
+        "CC=/usr/bin/clang -target $TARGET" \
+        "CFLAGS=-fPIC -target $TARGET"
     FFMPEG_CONFIGURE_FLAGS+=(
         --extra-cflags=-I$DEPS_DIR/include
         --extra-ldflags=-L$DEPS_DIR/lib

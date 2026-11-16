@@ -3,12 +3,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
-- `encode` build variant with native audio encoders/muxers and MP3 encoding via
-  a statically linked libmp3lame. Selected with `FFMPEG_VARIANT=encode`.
+- `encode` build variant with audio encoders/muxers, MP3 via static libmp3lame,
+  and Opus via static **libopus** (`build-opus.sh`). Selected with
+  `FFMPEG_VARIANT=encode`.
+- `build-macos-local.sh` for on-Mac encode builds (+ optional
+  `STAGE_MEDIATOOLS=1` into ubii `mediatools/third_party`).
 - `arm64-linux-gnu` builds.
+- CI: Linux + Windows matrix on push/PR/tags (`build.yml`); Windows ARM64
+  encode remains in `build-windows-arm64.yml`.
 
 ### Changed
 - Upgraded FFmpeg to 8.1.2.
+- Encode variant no longer enables experimental native `--enable-encoder=opus`
+  (scrambled audio); uses `--enable-libopus` / `--enable-encoder=libopus`.
+- macOS dropped from default CI matrix (build locally).
 
 ## [4.2.2-5] - 2020-02-19
 ### Changed

@@ -11,10 +11,16 @@ LAME_VERSION=3.100
 LAME_TARBALL=lame-$LAME_VERSION.tar.gz
 LAME_TARBALL_URL=https://downloads.sourceforge.net/project/lame/lame/$LAME_VERSION/$LAME_TARBALL
 
+# libopus (BSD) for the encode variant — required for usable Opus output.
+# FFmpeg's native --enable-encoder=opus is experimental and produces scrambled audio.
+OPUS_VERSION=1.5.2
+OPUS_TARBALL=opus-$OPUS_VERSION.tar.gz
+OPUS_TARBALL_URL=https://downloads.xiph.org/releases/opus/$OPUS_TARBALL
+
 # Which build variant to produce:
 #   decode - audio decoders only (default, used for Chromaprint/fpcalc)
-#   encode - decoders plus native audio encoders/muxers for transcoding,
-#            including MP3 encoding via a statically linked libmp3lame
+#   encode - decoders plus audio encoders/muxers for transcoding, including
+#            MP3 via static libmp3lame and Opus via static libopus
 # No GPL-only or nonfree codecs are ever included, so the builds stay LGPL.
 FFMPEG_VARIANT=${FFMPEG_VARIANT:-decode}
 
@@ -218,7 +224,10 @@ case $FFMPEG_VARIANT in
             --enable-encoder=alac
             --enable-encoder=wavpack
             --enable-encoder=tta
-            --enable-encoder=opus
+            # Opus via libopus only (do not enable experimental native opus).
+            --enable-libopus
+            --enable-encoder=libopus
+            --enable-parser=opus
             --enable-encoder=vorbis
             --enable-encoder=wmav1
             --enable-encoder=wmav2
