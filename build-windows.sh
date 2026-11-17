@@ -28,6 +28,7 @@ case $ARCH in
 esac
 
 CROSS_PREFIX=$ARCH-w64-mingw32-
+export PKG_CONFIG="${PKG_CONFIG:-pkg-config}"
 if ! command -v ${CROSS_PREFIX}gcc >/dev/null 2>&1
 then
 	echo "Missing cross compiler: ${CROSS_PREFIX}gcc" >&2
@@ -51,12 +52,21 @@ trap 'rm -rf $BUILD_DIR $DEPS_DIR' EXIT
 
 if [ "$FFMPEG_VARIANT" = encode ]
 then
-	LAME_PREFIX=$DEPS_DIR ./build-lame.sh --host=$ARCH-w64-mingw32
-	OPUS_PREFIX=$DEPS_DIR ./build-opus.sh --host=$ARCH-w64-mingw32
+	MINGW_HOST=$ARCH-w64-mingw32
+	DEPS_CONFIGURE_ARGS=(
+		--host=$MINGW_HOST
+		CC=${CROSS_PREFIX}gcc
+		CXX=${CROSS_PREFIX}g++
+		AR=${CROSS_PREFIX}ar
+		RANLIB=${CROSS_PREFIX}ranlib
+	)
+	LAME_PREFIX=$DEPS_DIR ./build-lame.sh "${DEPS_CONFIGURE_ARGS[@]}"
+	OPUS_PREFIX=$DEPS_DIR ./build-opus.sh "${DEPS_CONFIGURE_ARGS[@]}"
 	test -f "$DEPS_DIR/lib/libopus.a" || test -f "$DEPS_DIR/lib/libopus.lib"
 	export PKG_CONFIG_PATH="$DEPS_DIR/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
 	export PKG_CONFIG_LIBDIR="$DEPS_DIR/lib/pkgconfig"
 	FFMPEG_CONFIGURE_FLAGS+=(
+		--pkg-config=pkg-config
 		--extra-cflags=-I$DEPS_DIR/include
 		--extra-ldflags=-L$DEPS_DIR/lib
 		--pkg-config-flags=--static
@@ -94,4 +104,7 @@ fi
 make
 make install
 
-chown $(stat -c '%u:%g' $BASE_DIR) -R $BASE_DIR/$OUTPUT_DIR
+if stat -c '%u:%g' "$BASE_DIR" >/dev/null 2>&1
+then
+	chown "$(stat -c '%u:%g' "$BASE_DIR")" -R "$BASE_DIR/$OUTPUT_DIR"
+fi
