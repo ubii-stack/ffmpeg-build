@@ -55,15 +55,12 @@ DEPS_LDFLAGS=
 if [ "$FFMPEG_VARIANT" = encode ]
 then
 	MINGW_HOST=$ARCH-w64-mingw32
-	DEPS_CONFIGURE_ARGS=(--host=$MINGW_HOST)
-	if [ "$ARCH" = aarch64 ]
-	then
-		DEPS_CONFIGURE_ARGS+=(
-			CC=${CROSS_PREFIX}gcc
-			AR=${CROSS_PREFIX}ar
-			RANLIB=${CROSS_PREFIX}ranlib
-		)
-	fi
+	DEPS_CONFIGURE_ARGS=(
+		--host=$MINGW_HOST
+		CC=${CROSS_PREFIX}gcc
+		AR=${CROSS_PREFIX}ar
+		RANLIB=${CROSS_PREFIX}ranlib
+	)
 	echo "Building static libmp3lame for $MINGW_HOST" >&2
 	LAME_PREFIX=$DEPS_DIR ./build-lame.sh "${DEPS_CONFIGURE_ARGS[@]}" \
 		|| { echo "build-lame failed" >&2; exit 1; }
@@ -91,14 +88,9 @@ fi
 cd $BUILD_DIR
 tar --strip-components=1 -xf $BASE_DIR/$FFMPEG_TARBALL
 
-# Fully static PE for all Windows targets (-static-libstdc++ breaks some Ubuntu mingw probes).
+# Fully static PE (llvm-mingw / mingw-w64).
 EXTRA_CFLAGS='-static'
-if [ "$ARCH" = aarch64 ]
-then
-	EXTRA_LDFLAGS='-static'
-else
-	EXTRA_LDFLAGS=''
-fi
+EXTRA_LDFLAGS='-static'
 
 COMBINED_CFLAGS="$EXTRA_CFLAGS"
 if [ -n "$DEPS_CFLAGS" ]
