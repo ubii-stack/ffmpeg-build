@@ -64,8 +64,12 @@ then
 			RANLIB=${CROSS_PREFIX}ranlib
 		)
 	fi
-	LAME_PREFIX=$DEPS_DIR ./build-lame.sh "${DEPS_CONFIGURE_ARGS[@]}"
-	OPUS_PREFIX=$DEPS_DIR ./build-opus.sh "${DEPS_CONFIGURE_ARGS[@]}"
+	echo "Building static libmp3lame for $MINGW_HOST" >&2
+	LAME_PREFIX=$DEPS_DIR ./build-lame.sh "${DEPS_CONFIGURE_ARGS[@]}" \
+		|| { echo "build-lame failed" >&2; exit 1; }
+	echo "Building static libopus for $MINGW_HOST" >&2
+	OPUS_PREFIX=$DEPS_DIR ./build-opus.sh "${DEPS_CONFIGURE_ARGS[@]}" \
+		|| { echo "build-opus failed" >&2; exit 1; }
 	if [ ! -f "$DEPS_DIR/lib/libopus.a" ] \
 		&& [ ! -f "$DEPS_DIR/lib/libopus.lib" ] \
 		&& [ ! -f "$DEPS_DIR/lib/libopus.dll.a" ]
@@ -87,13 +91,12 @@ fi
 cd $BUILD_DIR
 tar --strip-components=1 -xf $BASE_DIR/$FFMPEG_TARBALL
 
-# gcc mingw (x86): static-libgcc. llvm-mingw (aarch64): plain -static is enough.
+# Fully static PE for all Windows targets (-static-libstdc++ breaks some Ubuntu mingw probes).
+EXTRA_CFLAGS='-static'
 if [ "$ARCH" = aarch64 ]
 then
-	EXTRA_CFLAGS='-static'
 	EXTRA_LDFLAGS='-static'
 else
-	EXTRA_CFLAGS='-static -static-libgcc -static-libstdc++'
 	EXTRA_LDFLAGS=''
 fi
 
@@ -115,6 +118,7 @@ FFMPEG_CONFIGURE_FLAGS+=(
 	--target-os=mingw32
 	--arch=$ARCH
 	--cross-prefix=$CROSS_PREFIX
+	--cc=${CROSS_PREFIX}gcc
 )
 
 if [ -n "$COMBINED_LDFLAGS" ]
