@@ -1,6 +1,7 @@
 /ffmpeg-*.tar.gz
 /lame-*.tar.gz
 /opus-*.tar.gz
+/opus-1.*/
 /artifacts/
 /build.*/
 /deps.*/

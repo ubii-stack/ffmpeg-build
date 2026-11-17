@@ -1,5 +1,5 @@
-# Windows audio-encode only (libopus). Linux follows once this matrix is green.
-name: Build Windows encode
+# ffmpeg4ubii — Windows audio-encode (libopus). Linux follows when enabled.
+name: ffmpeg4ubii Windows
 
 # One CI run per release: tag push only (not main). Push commit+tag together:
 #   git push origin main v8.1.2-N
@@ -26,7 +26,6 @@ jobs:
       matrix:
         arch:
           - x86_64
-          - i686
           - aarch64
     env:
       ARCH: ${{ matrix.arch }}
@@ -102,7 +101,7 @@ jobs:
         with:
           token: ${{ github.token }}
           tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
+          name: ffmpeg4ubii ${{ github.ref_name }}
           make_latest: true
           generate_release_notes: true
           files: release-out/*

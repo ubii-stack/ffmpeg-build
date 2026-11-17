@@ -1,7 +1,8 @@
-Static audio-only FFmpeg builds
-===============================
+ffmpeg4ubii
+===========
 
-This project contains scripts for small static audio-only FFmpeg builds. The
+Static FFmpeg builds for **ubii** (audio-encode today; room to grow toward
+video later). This project contains scripts for small static audio-only FFmpeg builds. The
 default builds are used for Chromaprint packaging (`fpcalc`), and there is an
 additional variant that can also encode audio (including **libopus** for Ubii
 LAN music sync).
@@ -35,17 +36,15 @@ Supported platforms:
       * `arm64-linux-gnu`
   - Windows (GitHub Actions)
       * `x86_64-w64-mingw32`
-      * `i686-w64-mingw32` (32-bit)
       * `aarch64-w64-mingw32` (Windows on ARM; llvm-mingw)
-  - macOS (local)
-      * `x86_64-apple-macos10.9`
+  - macOS (local, Apple silicon only)
       * `arm64-apple-macos11`
 
 CI workflows
 ------------
 
   - `.github/workflows/build-windows-encode.yml` — Windows **audio-encode**
-    (x86_64, i686, aarch64 / llvm-mingw). Runs on tags `v*`, PRs, and
+    (x86_64, aarch64 / llvm-mingw). Runs on tags `v*`, PRs, and
     workflow_dispatch (not on branch push — avoids double runs when you push
     `main` and a tag). Tag builds publish release assets (`.tar.gz`).
   - `.github/workflows/build.yml` — Linux **audio-encode** (workflow_dispatch
@@ -95,8 +94,9 @@ Homebrew opus dylib).
 
 ```sh
 ARCH=x86_64 FFMPEG_VARIANT=encode ./build-linux.sh
-ARCH=x86_64 FFMPEG_VARIANT=encode ./build-windows.sh   # needs mingw-w64 on PATH
+ARCH=x86_64 FFMPEG_VARIANT=encode ./build-windows.sh   # llvm-mingw on PATH
 
+# macOS Apple silicon only:
 TARGET=arm64-apple-macos11 FFMPEG_VARIANT=encode ./build-macos.sh
 
 # Windows ARM64 (llvm-mingw bin/ on PATH):

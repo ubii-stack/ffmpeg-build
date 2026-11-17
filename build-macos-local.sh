@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build the encode (audio-encode) variant for *this* Mac into artifacts/.
-# Prefer this over CI for darwin — native Apple silicon / Intel builds are easy locally.
+# Prefer this over CI for darwin — Apple silicon only (Intel macOS not supported).
 #
 # Usage:
 #   ./build-macos-local.sh
@@ -17,12 +17,8 @@ case "$(uname -m)" in
 		TARGET=arm64-apple-macos11
 		MEDIATOOLS_PLAT=darwin-arm64
 		;;
-	x86_64)
-		TARGET=x86_64-apple-macos10.9
-		MEDIATOOLS_PLAT=darwin-amd64
-		;;
 	*)
-		echo "unsupported arch: $(uname -m)" >&2
+		echo "ffmpeg4ubii macOS builds require Apple silicon (arm64); got: $(uname -m)" >&2
 		exit 1
 		;;
 esac

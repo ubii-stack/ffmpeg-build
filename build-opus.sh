@@ -42,7 +42,7 @@ case " $* " in
 		# Cross to Windows: avoid host RTCD / feature probes that fail or lie under cross.
 		OPUS_EXTRA+=(--disable-rtcd)
 		case " $* " in
-			*x86_64*|*i686*)
+			*x86_64*)
 				# Linux-hosted nasm/objfmt does not match PE; use portable C for x86 Windows.
 				OPUS_EXTRA+=(--disable-asm --disable-intrinsics)
 				;;

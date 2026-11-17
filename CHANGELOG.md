@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
   encode remains in `build-windows-arm64.yml`.
 
 ### Changed
+- Windows CI and `build-windows.sh`: drop 32-bit (`i686-w64-mingw32`); ship x86_64 + aarch64 only.
 - Upgraded FFmpeg to 8.1.2.
 - Encode variant no longer enables experimental native `--enable-encoder=opus`
   (scrambled audio); uses `--enable-libopus` / `--enable-encoder=libopus`.

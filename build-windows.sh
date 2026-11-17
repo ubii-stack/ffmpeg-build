@@ -16,13 +16,13 @@ fi
 
 # Normalize aliases. Mingw triples use aarch64 (not arm64).
 case $ARCH in
-	x86_64|i686)
+	x86_64)
 		;;
 	arm64|aarch64)
 		ARCH=aarch64
 		;;
 	*)
-		echo "Unknown Windows architecture: $ARCH (expected x86_64, i686, or aarch64/arm64)" >&2
+		echo "Unknown Windows architecture: $ARCH (expected x86_64 or aarch64/arm64)" >&2
 		exit 1
 		;;
 esac
