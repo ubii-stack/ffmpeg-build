@@ -36,12 +36,21 @@ then
 	exit 1
 fi
 
+OPUS_EXTRA=()
+case " $* " in
+	*"mingw"*)
+		# Cross to Windows: avoid host RTCD / feature probes that fail or lie under cross.
+		OPUS_EXTRA+=(--disable-rtcd)
+		;;
+esac
+
 ./configure \
 	--prefix="$OPUS_PREFIX" \
 	--enable-static \
 	--disable-shared \
 	--disable-extra-programs \
 	--disable-doc \
+	"${OPUS_EXTRA[@]}" \
 	"$@"
 
 make

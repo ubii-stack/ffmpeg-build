@@ -50,25 +50,33 @@ BUILD_DIR=$(mktemp -d -p $(pwd) build.XXXXXXXX)
 DEPS_DIR=$(mktemp -d -p $(pwd) deps.XXXXXXXX)
 trap 'rm -rf $BUILD_DIR $DEPS_DIR' EXIT
 
+DEPS_CFLAGS=
+DEPS_LDFLAGS=
 if [ "$FFMPEG_VARIANT" = encode ]
 then
 	MINGW_HOST=$ARCH-w64-mingw32
 	DEPS_CONFIGURE_ARGS=(
 		--host=$MINGW_HOST
 		CC=${CROSS_PREFIX}gcc
-		CXX=${CROSS_PREFIX}g++
 		AR=${CROSS_PREFIX}ar
 		RANLIB=${CROSS_PREFIX}ranlib
 	)
 	LAME_PREFIX=$DEPS_DIR ./build-lame.sh "${DEPS_CONFIGURE_ARGS[@]}"
 	OPUS_PREFIX=$DEPS_DIR ./build-opus.sh "${DEPS_CONFIGURE_ARGS[@]}"
-	test -f "$DEPS_DIR/lib/libopus.a" || test -f "$DEPS_DIR/lib/libopus.lib"
+	if [ ! -f "$DEPS_DIR/lib/libopus.a" ] \
+		&& [ ! -f "$DEPS_DIR/lib/libopus.lib" ] \
+		&& [ ! -f "$DEPS_DIR/lib/libopus.dll.a" ]
+	then
+		echo "libopus static library missing under $DEPS_DIR/lib" >&2
+		ls -la "$DEPS_DIR/lib" >&2 || true
+		exit 1
+	fi
 	export PKG_CONFIG_PATH="$DEPS_DIR/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
 	export PKG_CONFIG_LIBDIR="$DEPS_DIR/lib/pkgconfig"
+	DEPS_CFLAGS="-I$DEPS_DIR/include"
+	DEPS_LDFLAGS="-L$DEPS_DIR/lib"
 	FFMPEG_CONFIGURE_FLAGS+=(
 		--pkg-config=pkg-config
-		--extra-cflags=-I$DEPS_DIR/include
-		--extra-ldflags=-L$DEPS_DIR/lib
 		--pkg-config-flags=--static
 	)
 fi
@@ -86,18 +94,29 @@ else
 	EXTRA_LDFLAGS=''
 fi
 
+COMBINED_CFLAGS="$EXTRA_CFLAGS"
+if [ -n "$DEPS_CFLAGS" ]
+then
+	COMBINED_CFLAGS="$DEPS_CFLAGS ${COMBINED_CFLAGS# }"
+fi
+COMBINED_LDFLAGS="$EXTRA_LDFLAGS"
+if [ -n "$DEPS_LDFLAGS" ]
+then
+	COMBINED_LDFLAGS="$DEPS_LDFLAGS${COMBINED_LDFLAGS:+ $COMBINED_LDFLAGS}"
+fi
+
 FFMPEG_CONFIGURE_FLAGS+=(
 	--prefix=$BASE_DIR/$OUTPUT_DIR
-	--extra-cflags="$EXTRA_CFLAGS"
+	--extra-cflags="$COMBINED_CFLAGS"
 	--enable-cross-compile
 	--target-os=mingw32
 	--arch=$ARCH
 	--cross-prefix=$CROSS_PREFIX
 )
 
-if [ -n "$EXTRA_LDFLAGS" ]
+if [ -n "$COMBINED_LDFLAGS" ]
 then
-	FFMPEG_CONFIGURE_FLAGS+=(--extra-ldflags="$EXTRA_LDFLAGS")
+	FFMPEG_CONFIGURE_FLAGS+=(--extra-ldflags="$COMBINED_LDFLAGS")
 fi
 
 ./configure "${FFMPEG_CONFIGURE_FLAGS[@]}" || (cat ffbuild/config.log && exit 1)

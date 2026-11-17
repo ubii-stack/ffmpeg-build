@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y nasm mingw-w64 pkg-config
+          sudo apt-get install -y build-essential nasm mingw-w64 pkg-config
       - name: Build
         run: ./build-windows.sh
       - name: Verify encode binary
@@ -57,7 +57,7 @@ jobs:
       - name: Install nasm + pkg-config
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y nasm pkg-config
+          sudo apt-get install -y build-essential nasm pkg-config
       - name: Install llvm-mingw
         run: |
           set -eu
