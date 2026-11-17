@@ -44,11 +44,14 @@ Supported platforms:
 CI workflows
 ------------
 
-  - `.github/workflows/build.yml` — **Linux + Windows x86** matrix (`decode` +
-    `encode`). Runs on push to `main`, PRs, tags `v*`, and workflow_dispatch.
-    Tag builds publish release assets (`.tar.gz`).
-  - `.github/workflows/build-windows-arm64.yml` — Windows ARM64 **audio-encode**
-    only (llvm-mingw). Same triggers; tag builds append/update the release.
+  - `.github/workflows/build-windows-encode.yml` — Windows **audio-encode**
+    (x86_64, i686, aarch64 / llvm-mingw). Runs on tags `v*`, PRs, and
+    workflow_dispatch (not on branch push — avoids double runs when you push
+    `main` and a tag). Tag builds publish release assets (`.tar.gz`).
+  - `.github/workflows/build.yml` — Linux **audio-encode** (workflow_dispatch
+    until Windows matrix is green; re-enable tag push later).
+  - `.github/workflows/build-windows-arm64.yml` — legacy; arm64 is in
+    `build-windows-encode.yml`.
 
 macOS is **not** in CI by default — use the local script on an Apple machine.
 
@@ -60,7 +63,7 @@ version tag matching `v*`, for example:
 
 ```sh
 git tag v8.1.2-2
-git push origin v8.1.2-2
+git push origin main v8.1.2-2   # main updates remote; CI runs once (tag only)
 ```
 
 Each tarball unpacks to a prefix directory such as
