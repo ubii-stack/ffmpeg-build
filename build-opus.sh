@@ -47,4 +47,8 @@ fi
 make
 make install
 
-test -f "$OPUS_PREFIX/lib/libopus.a" -o -f "$OPUS_PREFIX/lib/libopus.lib"
+if [ ! -f "$OPUS_PREFIX/lib/libopus.a" ] && [ ! -f "$OPUS_PREFIX/lib/libopus.lib" ]
+then
+	echo "libopus not installed under $OPUS_PREFIX/lib" >&2
+	exit 1
+fi

@@ -5,13 +5,8 @@
 name: Build Windows ARM64 ffmpeg
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - v*
-  pull_request:
   workflow_dispatch:
+  # Windows ARM64 is built in build-windows-encode.yml (unified release).
 
 # New/forked repos default workflow token to read-only. Job-level permissions are
 # not always enough — release needs write at workflow level on tag builds (see README).
