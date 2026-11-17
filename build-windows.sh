@@ -122,6 +122,13 @@ fi
 make
 make install
 
+# Ship ubii-branded encoder name (ffprobe stays ffmpeg.exe tooling name).
+BIN_DIR="$BASE_DIR/$OUTPUT_DIR/bin"
+if [ -f "$BIN_DIR/ffmpeg.exe" ]
+then
+	mv "$BIN_DIR/ffmpeg.exe" "$BIN_DIR/ffmpeg4ubii.exe"
+fi
+
 if stat -c '%u:%g' "$BASE_DIR" >/dev/null 2>&1
 then
 	chown "$(stat -c '%u:%g' "$BASE_DIR")" -R "$BASE_DIR/$OUTPUT_DIR"

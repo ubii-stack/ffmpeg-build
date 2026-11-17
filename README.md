@@ -43,12 +43,11 @@ Supported platforms:
 CI workflows
 ------------
 
+  - `.github/workflows/build-linux-encode.yml` — Linux **audio-encode**
+    (x86_64, arm64). Tag `v*` + workflow_dispatch → release `.tar.gz`.
   - `.github/workflows/build-windows-encode.yml` — Windows **audio-encode**
-    (x86_64, aarch64 / llvm-mingw). Runs on tags `v*`, PRs, and
-    workflow_dispatch (not on branch push — avoids double runs when you push
-    `main` and a tag). Tag builds publish release assets (`.tar.gz`).
-  - `.github/workflows/build.yml` — Linux **audio-encode** (workflow_dispatch
-    until Windows matrix is green; re-enable tag push later).
+    (x86_64, aarch64 / llvm-mingw). **workflow_dispatch only** while Linux
+    CI is active; tag builds publish `ffmpeg4ubii.exe` releases when re-enabled.
   - `.github/workflows/build-windows-arm64.yml` — legacy; arm64 is in
     `build-windows-encode.yml`.
 
@@ -67,7 +66,7 @@ git push origin main v8.1.2-2   # main updates remote; CI runs once (tag only)
 
 Each tarball unpacks to a prefix directory such as
 `ffmpeg-8.1.2-audio-encode-aarch64-w64-mingw32/` with `bin/ffmpeg` or
-`bin/ffmpeg.exe`.
+`bin/ffmpeg4ubii.exe` (Windows; `bin/ffmpeg` on Linux).
 
 **One-time repo setup (required for releases):**
 

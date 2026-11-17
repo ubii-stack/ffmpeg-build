@@ -1,100 +1,17 @@
-# Linux audio-encode only (enable when Windows matrix is green).
-# Windows: build-windows-encode.yml. macOS: ./build-macos-local.sh
+# Legacy placeholder — Linux encode: build-linux-encode.yml
+# Windows encode: build-windows-encode.yml
 
-name: Build static ffmpeg
+name: Build static ffmpeg (legacy)
 
 on:
   workflow_dispatch:
-  # Re-enable push after Windows is stable:
-  # push:
-  #   branches: [main]
-  #   tags: [v*]
 
 permissions:
   contents: write
   actions: read
 
 jobs:
-  package-linux:
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        arch:
-          - x86_64
-          - arm64
-    env:
-      ARCH: ${{ matrix.arch }}
-      FFMPEG_VARIANT: encode
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -y && \
-          sudo apt-get install -y nasm pkg-config
-      - name: Install ARM64 compiler
-        if: env.ARCH == 'arm64'
-        run: |
-          sudo apt-get update -y && \
-          sudo apt-get install -y gcc-aarch64-linux-gnu
-      - name: Build
-        run: ./build-linux.sh
-      - name: Verify encode binary
-        run: |
-          set -eu
-          ff="$(find artifacts -type f -name ffmpeg -path '*/bin/ffmpeg' | head -1)"
-          test -n "$ff"
-          bash scripts/ci-verify-encode.sh "$ff"
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-linux-${{ env.ARCH }}-audio-encode
-          path: artifacts/
-
-  release:
+  noop:
     runs-on: ubuntu-latest
-    needs:
-      - package-linux
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: write
-      actions: read
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: artifacts/
-          pattern: ffmpeg-*
-          merge-multiple: true
-      - name: Make tarballs
-        run: |
-          set -eu
-          mkdir -p release-out
-          declare -A packed
-          while IFS= read -r ff
-          do
-            inst="$(dirname "$(dirname "$ff")")"
-            name="$(basename "$inst")"
-            case "$name" in
-              ffmpeg-*)
-                ;;
-              *)
-                continue
-                ;;
-            esac
-            if [ -n "${packed[$name]:-}" ]
-            then
-              continue
-            fi
-            packed[$name]=1
-            tar czf "release-out/${name}.tar.gz" -C "$(dirname "$inst")" "$name"
-          done < <(find artifacts -type f \( -name ffmpeg.exe -o -name ffmpeg \) -path '*/bin/*')
-          ls -la release-out/
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ github.token }}
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          make_latest: true
-          generate_release_notes: true
-          files: release-out/*
+      - run: echo "Use build-linux-encode.yml or build-windows-encode.yml"

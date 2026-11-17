@@ -4,11 +4,11 @@ name: ffmpeg4ubii Windows
 # One CI run per release: tag push only (not main). Push commit+tag together:
 #   git push origin main v8.1.2-N
 on:
-  push:
-    tags:
-      - v*
-  pull_request:
   workflow_dispatch:
+  # Tag builds paused while Linux encode is in CI — re-enable when done:
+  # push:
+  #   tags: [v*]
+  # pull_request:
 
 permissions:
   contents: write
@@ -52,7 +52,7 @@ jobs:
       - name: Verify encode binary
         run: |
           set -eu
-          ff="$(find artifacts -type f -name ffmpeg.exe -path '*/bin/*' | head -1)"
+          ff="$(find artifacts -type f -name ffmpeg4ubii.exe -path '*/bin/*' | head -1)"
           test -n "$ff"
           bash scripts/ci-verify-encode.sh "$ff"
       - name: Archive production artifacts
@@ -93,7 +93,7 @@ jobs:
             if [ -n "${packed[$name]:-}" ]; then continue; fi
             packed[$name]=1
             tar czf "release-out/${name}.tar.gz" -C "$(dirname "$inst")" "$name"
-          done < <(find artifacts -type f -name ffmpeg.exe -path '*/bin/*')
+          done < <(find artifacts -type f -name ffmpeg4ubii.exe -path '*/bin/*')
           ls -la release-out/
           test "$(ls -A release-out)"
       - name: Release
