@@ -46,8 +46,8 @@ CI workflows
   - `.github/workflows/build-linux-encode.yml` — Linux **audio-encode**
     (x86_64, arm64). Tag `v*` + workflow_dispatch → release `.tar.gz`.
   - `.github/workflows/build-windows-encode.yml` — Windows **audio-encode**
-    (x86_64, aarch64 / llvm-mingw). **workflow_dispatch only** while Linux
-    CI is active; tag builds publish `ffmpeg4ubii.exe` releases when re-enabled.
+    (x86_64, aarch64 / llvm-mingw). Tag `v*` + workflow_dispatch → `ffmpeg4ubii.exe`
+    on the same release as Linux.
   - `.github/workflows/build-windows-arm64.yml` — legacy; arm64 is in
     `build-windows-encode.yml`.
 
@@ -65,8 +65,8 @@ git push origin main v8.1.2-2   # main updates remote; CI runs once (tag only)
 ```
 
 Each tarball unpacks to a prefix directory such as
-`ffmpeg-8.1.2-audio-encode-aarch64-w64-mingw32/` with `bin/ffmpeg` or
-`bin/ffmpeg4ubii.exe` (Windows; `bin/ffmpeg` on Linux).
+`ffmpeg-8.1.2-audio-encode-aarch64-w64-mingw32/` with `bin/ffmpeg4ubii.exe`
+(Windows), `bin/ffmpeg4ubii` (macOS / Linux).
 
 **One-time repo setup (required for releases):**
 
@@ -82,7 +82,7 @@ Building locally
 # encode + static libopus → artifacts/…
 ./build-macos-local.sh
 
-# also copy to ubii mediatools third_party as ffmpeg-audio:
+# also copy to ubii mediatools third_party as ffmpeg4ubii:
 STAGE_MEDIATOOLS=1 ./build-macos-local.sh
 ```
 
@@ -108,7 +108,7 @@ Ubii mediatools
 ---------------
 
 `mediatools/scripts/fetch-ffmpeg.sh` downloads release assets into
-`third_party/ffmpeg/<goos>-<goarch>/ffmpeg-audio`. After a new tag with
+`third_party/ffmpeg/<goos>-<goarch>/ffmpeg4ubii` (`.exe` on Windows). After a new tag with
 libopus encode builds, bump the version pin and re-fetch.
 
 For a local macOS helper without waiting on CI:

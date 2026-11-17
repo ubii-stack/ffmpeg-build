@@ -132,6 +132,11 @@ fi
 make
 make install
 
+FF_BIN="$BASE_DIR/$OUTPUT_DIR/bin/ffmpeg"
+if [ -f "$FF_BIN" ]; then
+	mv "$FF_BIN" "$BASE_DIR/$OUTPUT_DIR/bin/ffmpeg4ubii"
+fi
+
 if stat -c '%u:%g' "$BASE_DIR" >/dev/null 2>&1; then
     chown "$(stat -c '%u:%g' "$BASE_DIR")" -R "$BASE_DIR/$OUTPUT_DIR"
 fi

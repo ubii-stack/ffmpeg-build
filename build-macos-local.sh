@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ./build-macos-local.sh
-#   STAGE_MEDIATOOLS=1 ./build-macos-local.sh   # also copy bin/ffmpeg → ubii mediatools third_party
+#   STAGE_MEDIATOOLS=1 ./build-macos-local.sh   # also copy bin/ffmpeg4ubii → ubii mediatools third_party
 #
 # Requires: curl, make, clang, nasm (brew install nasm).
 set -euo pipefail
@@ -29,8 +29,8 @@ export FFMPEG_VARIANT=encode
 echo "==> Building ffmpeg audio-encode for $TARGET"
 ./build-macos.sh
 
-# Locate installed binary under artifacts/
-FF_BIN=$(find "$BASE_DIR/artifacts" -type f -name ffmpeg -path '*/bin/ffmpeg' | head -1)
+# Locate installed binary under artifacts/ (encode → ffmpeg4ubii; legacy trees may still have ffmpeg)
+FF_BIN=$(find "$BASE_DIR/artifacts" -type f \( -name ffmpeg4ubii -o -name ffmpeg \) -path '*/bin/*' | head -1)
 if [ -z "$FF_BIN" ] || [ ! -x "$FF_BIN" ]
 then
 	echo "ffmpeg binary missing under artifacts/" >&2
@@ -50,11 +50,11 @@ if [ "${STAGE_MEDIATOOLS:-}" = "1" ]
 then
 	DEST_ROOT="${MEDIATOOLS_ROOT:-$BASE_DIR/../mediatools/third_party/ffmpeg/$MEDIATOOLS_PLAT}"
 	mkdir -p "$DEST_ROOT"
-	cp -f "$FF_BIN" "$DEST_ROOT/ffmpeg-audio"
-	chmod 755 "$DEST_ROOT/ffmpeg-audio"
+	cp -f "$FF_BIN" "$DEST_ROOT/ffmpeg4ubii"
+	chmod 755 "$DEST_ROOT/ffmpeg4ubii"
 	cat >"$DEST_ROOT/README.txt" <<EOF
-ffmpeg-audio from ubii-stack/ffmpeg-build (encode + static libopus).
+ffmpeg4ubii from ubii-stack/ffmpeg-build (encode + static libopus).
 Built locally: ./build-macos-local.sh (STAGE_MEDIATOOLS=1).
 EOF
-	echo "staged $DEST_ROOT/ffmpeg-audio"
+	echo "staged $DEST_ROOT/ffmpeg4ubii"
 fi

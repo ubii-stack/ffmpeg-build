@@ -78,4 +78,13 @@ perl -pi -e 's{HAVE_MACH_MACH_TIME_H 1}{HAVE_MACH_MACH_TIME_H 0}' config.h
 make V=1
 make install
 
+if [ "$FFMPEG_VARIANT" = encode ]
+then
+	FF_BIN="$BASE_DIR/$OUTPUT_DIR/bin/ffmpeg"
+	if [ -f "$FF_BIN" ]
+	then
+		mv "$FF_BIN" "$BASE_DIR/$OUTPUT_DIR/bin/ffmpeg4ubii"
+	fi
+fi
+
 chown -R $(stat -f '%u:%g' $BASE_DIR) $BASE_DIR/$OUTPUT_DIR
