@@ -1,10 +1,10 @@
 # Windows audio-encode only (libopus). Linux follows once this matrix is green.
 name: Build Windows encode
 
+# One CI run per release: tag push only (not main). Push commit+tag together:
+#   git push origin main v8.1.2-N
 on:
   push:
-    branches:
-      - main
     tags:
       - v*
   pull_request:
