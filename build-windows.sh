@@ -55,12 +55,15 @@ DEPS_LDFLAGS=
 if [ "$FFMPEG_VARIANT" = encode ]
 then
 	MINGW_HOST=$ARCH-w64-mingw32
-	DEPS_CONFIGURE_ARGS=(
-		--host=$MINGW_HOST
-		CC=${CROSS_PREFIX}gcc
-		AR=${CROSS_PREFIX}ar
-		RANLIB=${CROSS_PREFIX}ranlib
-	)
+	DEPS_CONFIGURE_ARGS=(--host=$MINGW_HOST)
+	if [ "$ARCH" = aarch64 ]
+	then
+		DEPS_CONFIGURE_ARGS+=(
+			CC=${CROSS_PREFIX}gcc
+			AR=${CROSS_PREFIX}ar
+			RANLIB=${CROSS_PREFIX}ranlib
+		)
+	fi
 	LAME_PREFIX=$DEPS_DIR ./build-lame.sh "${DEPS_CONFIGURE_ARGS[@]}"
 	OPUS_PREFIX=$DEPS_DIR ./build-opus.sh "${DEPS_CONFIGURE_ARGS[@]}"
 	if [ ! -f "$DEPS_DIR/lib/libopus.a" ] \
